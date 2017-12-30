@@ -1,0 +1,23 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: a01store
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: a01store
+        version: 0.1.0
+    spec:
+      containers:
+      - name: a01store
+        image: a01reg.azurecr.io/a01store:0.1.0
+        ports:
+        - containerPort: 80
+        env:
+        - name: A01_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: a01
+              key: storedb
