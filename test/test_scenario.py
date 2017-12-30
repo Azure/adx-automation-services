@@ -1,10 +1,11 @@
+import os
 import json
 import logging
 import requests
 
 logging.basicConfig(level=logging.DEBUG)
 
-host = 'http://localhost:5000'
+host = os.environ['A01STORE_TEST_HOST']
 image = 'a01reg.azurecr.io/az-droid:001'
 with open('manifest.json') as f:
     manifest = json.load(f)
