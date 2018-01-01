@@ -248,17 +248,21 @@ def checkout_task(run_id):
     if not run:
         return jsonify({'error': f'run <{run_id}> is not found'}), 404
 
-    task = Task.query.filter_by(run_id=run.id, status='initialized').with_for_update(nowait=True).first()
-    if not task:
-        return jsonify({'message': 'all tasks are scheduled'}), 204
+    # three retry
+    for _ in range(3):
+        task = Task.query.filter_by(run_id=run.id, status='initialized').with_for_update(skip_locked=True).first()
+        if not task:
+            return jsonify({'message': 'all tasks are scheduled'}), 204
 
-    task.status = 'scheduled'
-    try:
-        db.session.commit()
-    except (IntegrityError, DBAPIError):
-        return jsonify({'error': f'failed to update a task due to row lock. please retry.'}), 500
+        task.status = 'scheduled'
+        try:
+            db.session.commit()
+        except (IntegrityError, DBAPIError):
+            continue
 
-    return jsonify(task.digest())
+        return jsonify(task.digest())
+
+    return jsonify({'error': f'failed to update a task due to row lock. please retry.'}), 500
 
 
 if __name__ == '__main__':

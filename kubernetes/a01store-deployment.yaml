@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: a01store
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: a01store
-        image: a01reg.azurecr.io/a01store:0.1.0
+        image: a01reg.azurecr.io/a01store:0.1.1
         ports:
         - containerPort: 80
         env:
