@@ -1,7 +1,0 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: a01-database
-spec:
-  type: ExternalName
-  externalName: a01store-test.postgres.database.azure.com

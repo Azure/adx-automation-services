@@ -7,3 +7,7 @@ A01Store service accept automation tests scheduled by the Control (or user) and 
 - Python 3 (3.6)
 - Contaienr based
 - Flask
+
+# Deployments note
+- Set up secret. The vault is a0secret
+- Set up private docker registry secret using sp azureclidev-contributor
