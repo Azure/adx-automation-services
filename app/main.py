@@ -103,7 +103,9 @@ class Task(db.Model):
     run_id = db.Column(db.Integer, db.ForeignKey('run.id'), nullable=False)
     run = db.relationship('Run', backref=db.backref('tasks', cascade='all, delete-orphan', lazy=True))
 
-    def digest(self):
+    immutable_properties = {'name', 'id', 'annotation', 'run_id'}
+
+    def digest(self) -> dict:
         result = {
             'id': self.id,
             'name': self.name,
@@ -112,7 +114,8 @@ class Task(db.Model):
             'status': self.status,
             'duration': self.duration,
             'result': self.result,
-            'result_details': _unify_json_output(self.result_details)
+            'result_details': _unify_json_output(self.result_details),
+            'run_id': self.run_id
         }
 
         return result
@@ -129,8 +132,8 @@ class Task(db.Model):
 
     def patch(self, data):
         for key, value in data.items():
-            if key == 'name' or key == 'id' or key == 'annotation':
-                raise ValueError('Property name, id, and annotation are immutable.')
+            if key in self.immutable_properties:
+                raise ValueError(f'Property {key} immutable.')
             if hasattr(self, key):
                 if key == 'settings' or key == 'result_details':
                     setattr(self, key, _unify_json_input(value))
