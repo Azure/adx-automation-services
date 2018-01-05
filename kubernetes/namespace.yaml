@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: az
+  labels:
+    team: azure-cli
+    purpose: automation
+    flavor: production

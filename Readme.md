@@ -9,5 +9,7 @@ A01Store service accept automation tests scheduled by the Control (or user) and 
 - Flask
 
 # Deployments note
+- Set up namespace.
+- Set up context.
 - Set up secret. The vault is a0secret
 - Set up private docker registry secret using sp azureclidev-contributor
