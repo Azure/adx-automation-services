@@ -10,3 +10,7 @@ az acr login -n $registry
 docker build -t $image .
 docker push $image
 
+image_latest=$server/a01store:latest 
+docker tag $image $image_latest
+docker push $image_latest
+docker rmi $image_latest
