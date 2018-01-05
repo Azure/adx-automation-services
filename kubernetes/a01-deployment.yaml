@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: az
+  labels:
+    team: azure-cli
+    purpose: automation
+    flavor: production
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: task-store-db-service
+  namespace: az
+  labels:
+    system: a01
+spec:
+  type: ExternalName
+  externalName: a01taskstore.postgres.database.azure.com
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: task-store-front
+  namespace: az
+  labels:
+    system: a01
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: task-store-front
+    spec:
+      containers:
+      - name: task-store-front
+        image: azureclidev.azurecr.io/a01store:0.1.1
+        ports:
+        - containerPort: 80
+        env:
+        - name: A01_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: task-store-db-uri
+              key: dburi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-store-web-service
+  namespace: az
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: task-store-front
