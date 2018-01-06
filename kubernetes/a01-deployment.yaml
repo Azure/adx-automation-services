@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: task-store-front
-        image: azureclidev.azurecr.io/a01store:0.1.1
+        image: azureclidev.azurecr.io/a01store:0.2.0
         ports:
         - containerPort: 80
         env:
@@ -32,6 +32,8 @@ spec:
             secretKeyRef:
               name: task-store-db-uri
               key: dburi
+      imagePullSecrets:
+      - name: azureclidev-acr
 ---
 apiVersion: v1
 kind: Service
