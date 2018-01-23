@@ -7,11 +7,7 @@ server=$registry.azurecr.io
 version=$(cat ./version)
 image=$server/a01store:$version
 
-count=$(az acr repository show-tags -n $registry --repository a01store -otsv | grep $version -c)
-if [ "$count" != "0" ]; then
-    echo The tag $version already exist for image a01store on $server
-    exit 1
-fi
+docker pull $image >/dev/null 2>&1 && (echo The tag $version already exist for image a01store on $server >&2; exit 1)
 
 docker build -t $image .
 docker push $image
