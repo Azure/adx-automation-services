@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+version=$1
+
+if [ -z $version ]; then
+    echo "Skip publish since the version is not given."
+    exit 0
+fi
+
+set -e
+
+registry=azureclidev
+image=azureclidev.azurecr.io/a01store:$version
+
+docker login azureclidev.azurecr.io -u $AZURECLIDEV_ACR_SP_USERNAME -p $AZURECLIDEV_ACR_SP_PASSWORD
+docker pull $image >/dev/null 2>&1 && (echo The image $image already exists. >&2; exit 1)
+
+docker build -t $image .
+docker push $image
+
+image_latest=azureclidev.azurecr.io/a01store:latest
+docker tag $image $image_latest
+docker push $image_latest
+docker rmi $image_latest

@@ -17,7 +17,7 @@ app = Flask(__name__)  # pylint: disable=invalid-name
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['A01_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)  # pylint: disable=invalid-name
-migrate = Migrate(app, db)
+migrate = Migrate(app, db)  # pylint: disable=invalid-name
 
 
 def _unify_json_input(data):
