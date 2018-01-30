@@ -45,3 +45,35 @@ spec:
   - port: 80
   selector:
     app: task-store-front
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-store-web-service-internal
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: task-store-front
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: a01store-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - secretName: a01store-tls
+    hosts:
+    - a01.troydai.com
+  rules:
+  - host: a01.troydai.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: task-store-web-service-internal
+          servicePort: 80
