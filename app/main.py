@@ -4,14 +4,22 @@ and store it in a database. The test tasks are available to the automation
 droids. The A01Store plays a passive role in the producer-consumer
 relationship meaning the driver is the consumer (A01Droid).
 """
+from datetime import datetime, timedelta
+import base64
+import logging
 import os
-import datetime
 import json
 
+from functools import wraps
 from sqlalchemy.exc import IntegrityError, DBAPIError
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+
+import jwt
+import requests
+from cryptography.x509 import load_pem_x509_certificate
+from cryptography.hazmat.backends import default_backend
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['A01_DATABASE_URI']
@@ -80,7 +88,7 @@ class Run(db.Model):
         self.settings = _unify_json_input(data.get('settings', None))
 
         if not self.creation:
-            self.creation = datetime.datetime.utcnow()
+            self.creation = datetime.utcnow()
 
 
 class Task(db.Model):
@@ -145,19 +153,81 @@ class Task(db.Model):
                     setattr(self, key, value)
 
 
+class AzureADPublicKeysManager(object):
+    def __init__(self,
+                 jwks_uri: str = 'https://login.microsoftonline.com/common/discovery/keys',
+                 client_id: str = '00000002-0000-0000-c000-000000000000'):
+        self._logger = logging.getLogger(__name__)
+        self._last_update = datetime.min
+        self._certs = {}
+        self._jwks_uri = jwks_uri
+        self._client_id = client_id
+
+    def _refresh_certs(self) -> None:
+        """Refresh the public certificates for every 12 hours."""
+        if datetime.utcnow() - self._last_update >= timedelta(hours=12):
+            self._logger.info('Refresh the certificates')
+            self._update_certs()
+            self._last_update = datetime.utcnow()
+        else:
+            self._logger.info('Skip refreshing the certificates')
+
+    def _update_certs(self) -> None:
+        self._certs.clear()
+        response = requests.get(self._jwks_uri)
+        for key in response.json()['keys']:
+            cert_str = "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----\n".format(key['x5c'][0])
+            cert_obj = load_pem_x509_certificate(cert_str.encode('utf-8'), default_backend())
+            public_key = cert_obj.public_key()
+            self._logger.info('Create public key for %s from cert: %s', key['kid'], cert_str)
+            self._certs[key['kid']] = public_key
+
+    def get_public_key(self, key_id: str):
+        self._refresh_certs()
+        return self._certs[key_id]
+
+    def get_id_token_payload(self, id_token: str):
+        header = json.loads(base64.b64decode(id_token.split('.')[0]).decode('utf-8'))
+        key_id = header['kid']
+        public_key = self.get_public_key(key_id)
+
+        return jwt.decode(id_token, public_key, audience=self._client_id)
+
+
+jwt_auth = AzureADPublicKeysManager()  # pylint: disable=invalid-name
+
+
+def auth(fn):  # pylint: disable=invalid-name
+    @wraps(fn)
+    def _wrapper(*args, **kwargs):
+        try:
+            jwt_raw = request.environ['HTTP_AUTHORIZATION']
+            jwt_auth.get_id_token_payload(jwt_raw)
+        except KeyError:
+            return Response(json.dumps({'error': 'Unauthorized', 'message': 'Missing authorization header.'}), 401)
+        except jwt.ExpiredSignatureError:
+            return Response(json.dumps({'error': 'Expired', 'message': 'The JWT token is expired.'}), 401)
+
+        return fn(*args, **kwargs)
+
+    return _wrapper
+
+
 @app.route('/healthy')
 def get_healthy():
     """Healthy status endpoint"""
-    return jsonify({'status': 'healthy', 'time': datetime.datetime.utcnow()})
+    return jsonify({'status': 'healthy', 'time': datetime.utcnow()})
 
 
 @app.route('/runs')
+@auth
 def get_runs():
     """List all the runs"""
     return jsonify([r.digest() for r in Run.query.all()])
 
 
 @app.route('/run', methods=['POST'])
+@auth
 def post_run():
     run = Run()
     run.load(request.json)
@@ -169,12 +239,14 @@ def post_run():
 
 
 @app.route('/run/<run_id>')
+@auth
 def get_run(run_id):
     run = Run.query.filter_by(id=run_id).first_or_404()
     return jsonify(run.digest())
 
 
 @app.route('/run/<run_id>', methods=['DELETE'])
+@auth
 def delete_run(run_id):
     run = Run.query.filter_by(id=run_id).first()
     if run:
@@ -186,6 +258,7 @@ def delete_run(run_id):
 
 
 @app.route('/run/<run_id>/tasks')
+@auth
 def get_tasks(run_id):
     run = Run.query.filter_by(id=run_id).first()
     if not run:
@@ -195,6 +268,7 @@ def get_tasks(run_id):
 
 
 @app.route('/run/<run_id>/task', methods=['POST'])
+@auth
 def post_task(run_id):
     run = Run.query.filter_by(id=run_id).first()
     if not run:
@@ -210,6 +284,7 @@ def post_task(run_id):
 
 
 @app.route('/run/<run_id>/tasks', methods=['POST'])
+@auth
 def post_tasks(run_id):
     run = Run.query.filter_by(id=run_id).first()
     if not run:
@@ -226,6 +301,7 @@ def post_tasks(run_id):
 
 
 @app.route('/task/<task_id>')
+@auth
 def get_task(task_id):
     task = Task.query.filter_by(id=task_id).first()
     if not task:
@@ -235,6 +311,7 @@ def get_task(task_id):
 
 
 @app.route('/task/<task_id>', methods=['PATCH'])
+@auth
 def patch_task(task_id):
     task = Task.query.filter_by(id=task_id).first()
     if not task:
@@ -250,6 +327,7 @@ def patch_task(task_id):
 
 
 @app.route('/run/<run_id>/checkout', methods=['POST'])
+@auth
 def checkout_task(run_id):
     run = Run.query.filter_by(id=run_id).first()
     if not run:
