@@ -26,6 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['A01_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)  # pylint: disable=invalid-name
 migrate = Migrate(app, db)  # pylint: disable=invalid-name
+INTERNAL_COMMUNICATION_KEY = os.environ['A01_INTERNAL_COMKEY']
 
 
 def _unify_json_input(data):
@@ -202,7 +203,8 @@ def auth(fn):  # pylint: disable=invalid-name
     def _wrapper(*args, **kwargs):
         try:
             jwt_raw = request.environ['HTTP_AUTHORIZATION']
-            jwt_auth.get_id_token_payload(jwt_raw)
+            if jwt_raw != INTERNAL_COMMUNICATION_KEY:
+                jwt_auth.get_id_token_payload(jwt_raw)
         except KeyError:
             return Response(json.dumps({'error': 'Unauthorized', 'message': 'Missing authorization header.'}), 401)
         except jwt.ExpiredSignatureError:

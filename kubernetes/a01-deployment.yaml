@@ -32,19 +32,13 @@ spec:
             secretKeyRef:
               name: task-store-db-uri
               key: dburi
+        - name: A01_INTERNAL_COMKEY
+          valueFrom:
+            secretKeyRef:
+              name: a01store-internal-communication-key
+              key: key
       imagePullSecrets:
       - name: azureclidev-acr
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: task-store-web-service
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-  selector:
-    app: task-store-front
 ---
 apiVersion: v1
 kind: Service
