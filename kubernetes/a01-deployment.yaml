@@ -62,9 +62,9 @@ spec:
   tls:
   - secretName: a01store-tls
     hosts:
-    - a01.troydai.com
+    - a01.azclitest.com
   rules:
-  - host: a01.troydai.com
+  - host: a01.azclitest.com
     http:
       paths:
       - path: /
