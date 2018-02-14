@@ -9,8 +9,9 @@ import base64
 import logging
 import os
 import json
-
 from functools import wraps
+
+import coloredlogs
 from sqlalchemy.exc import IntegrityError, DBAPIError
 from flask import Flask, jsonify, request, Response
 from flask_sqlalchemy import SQLAlchemy
@@ -20,6 +21,9 @@ import jwt
 import requests
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
+
+
+coloredlogs.install(level=logging.INFO)
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['A01_DATABASE_URI']
@@ -144,9 +148,11 @@ class Task(db.Model):
         self.result_details = _unify_json_input(data.get('result_details', None))
 
     def patch(self, data):
+        logger = logging.getLogger(Task.__class__.__name__)
         for key, value in data.items():
             if key in self.immutable_properties:
-                raise ValueError(f'Property {key} immutable.')
+                logger.warning(f'Property {key} is immutable. Ignored.')
+                continue
             if hasattr(self, key):
                 if key == 'settings' or key == 'result_details':
                     setattr(self, key, _unify_json_input(value))
