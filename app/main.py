@@ -221,20 +221,20 @@ def auth(fn):  # pylint: disable=invalid-name
     return _wrapper
 
 
-@app.route('/healthy')
+@app.route('/api/healthy')
 def get_healthy():
     """Healthy status endpoint"""
     return jsonify({'status': 'healthy', 'time': datetime.utcnow()})
 
 
-@app.route('/runs')
+@app.route('/api/runs')
 @auth
 def get_runs():
     """List all the runs"""
     return jsonify([r.digest() for r in Run.query.all()])
 
 
-@app.route('/run', methods=['POST'])
+@app.route('/api/run', methods=['POST'])
 @auth
 def post_run():
     run = Run()
@@ -246,14 +246,14 @@ def post_run():
     return jsonify(run.digest())
 
 
-@app.route('/run/<run_id>')
+@app.route('/api/run/<run_id>')
 @auth
 def get_run(run_id):
     run = Run.query.filter_by(id=run_id).first_or_404()
     return jsonify(run.digest())
 
 
-@app.route('/run/<run_id>', methods=['DELETE'])
+@app.route('/api/run/<run_id>', methods=['DELETE'])
 @auth
 def delete_run(run_id):
     run = Run.query.filter_by(id=run_id).first()
@@ -265,7 +265,7 @@ def delete_run(run_id):
     return jsonify({'status': 'no action'})
 
 
-@app.route('/run/<run_id>/tasks')
+@app.route('/api/run/<run_id>/tasks')
 @auth
 def get_tasks(run_id):
     run = Run.query.filter_by(id=run_id).first()
@@ -275,7 +275,7 @@ def get_tasks(run_id):
     return jsonify([t.digest() for t in run.tasks])
 
 
-@app.route('/run/<run_id>/task', methods=['POST'])
+@app.route('/api/run/<run_id>/task', methods=['POST'])
 @auth
 def post_task(run_id):
     run = Run.query.filter_by(id=run_id).first()
@@ -291,7 +291,7 @@ def post_task(run_id):
     return jsonify(task.digest())
 
 
-@app.route('/run/<run_id>/tasks', methods=['POST'])
+@app.route('/api/run/<run_id>/tasks', methods=['POST'])
 @auth
 def post_tasks(run_id):
     run = Run.query.filter_by(id=run_id).first()
@@ -308,7 +308,7 @@ def post_tasks(run_id):
     return jsonify({'status': 'success', 'added': len(request.json)})
 
 
-@app.route('/task/<task_id>')
+@app.route('/api/task/<task_id>')
 @auth
 def get_task(task_id):
     task = Task.query.filter_by(id=task_id).first()
@@ -318,7 +318,7 @@ def get_task(task_id):
     return jsonify(task.digest())
 
 
-@app.route('/task/<task_id>', methods=['PATCH'])
+@app.route('/api/task/<task_id>', methods=['PATCH'])
 @auth
 def patch_task(task_id):
     task = Task.query.filter_by(id=task_id).first()
@@ -334,7 +334,7 @@ def patch_task(task_id):
     return jsonify(task.digest())
 
 
-@app.route('/run/<run_id>/checkout', methods=['POST'])
+@app.route('/api/run/<run_id>/checkout', methods=['POST'])
 @auth
 def checkout_task(run_id):
     run = Run.query.filter_by(id=run_id).first()
