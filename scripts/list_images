@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-az acr repository show-tags -n azureclidev --repository a01store
