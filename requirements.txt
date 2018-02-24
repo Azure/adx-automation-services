@@ -1,4 +1,8 @@
+# style
 pylint==1.8.2
+
+# package
 wheel==0.30.0
+setuptools==38.5.1
 
 -r app/requirements.txt
