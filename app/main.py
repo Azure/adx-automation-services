@@ -95,6 +95,11 @@ class Run(db.Model):
         if not self.creation:
             self.creation = datetime.utcnow()
 
+    def patch(self, data):
+        # only support update details dictionary
+        if 'details' in data:
+            setattr(self, 'details', _unify_json_input(data['details']))
+
 
 class Task(db.Model):
     # unique id
@@ -243,6 +248,19 @@ def post_run():
     db.session.add(run)
     db.session.commit()
 
+    return jsonify(run.digest())
+
+
+@app.route('/app/run/<run_id>', methods=['PATCH'])
+@auth
+def patch_run(run_id):
+    run = Run.query.filter_by(id=run_id).first_or_404()
+    try:
+        run.patch(request.json)
+    except ValueError as error:
+        return jsonify({'error', error})
+
+    db.session.commit()
     return jsonify(run.digest())
 
 
