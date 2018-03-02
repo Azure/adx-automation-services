@@ -251,7 +251,7 @@ def post_run():
     return jsonify(run.digest())
 
 
-@app.route('/app/run/<run_id>', methods=['PATCH'])
+@app.route('/api/run/<run_id>', methods=['PATCH'])
 @auth
 def patch_run(run_id):
     run = Run.query.filter_by(id=run_id).first_or_404()
