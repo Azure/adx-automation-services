@@ -22,7 +22,6 @@ import requests
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
 
-
 coloredlogs.install(level=logging.INFO)
 
 app = Flask(__name__)  # pylint: disable=invalid-name
@@ -60,6 +59,11 @@ class Run(db.Model):
     # display name for the test run
     name = db.Column(db.String)
 
+    # the owner who creates this run. it is the user id for a human and service principal name for a service principal
+    # this column was added in later version, for legacy data, the a01.reserved.creator or creator in the settings or
+    # details column will be copied here.
+    owner = db.Column(db.String)
+
     # The test run settings is a immutable value. It is expected to be a JSON, however, it can be in any other form as
     # long as it can be represented in a string. The settings must not contain any secrets such as password or database
     # connection string. Those value should be sent to the test droid through Kubernete secret. And the values in the
@@ -79,6 +83,7 @@ class Run(db.Model):
         result = {
             'id': self.id,
             'name': self.name,
+            'owner': self.owner,
             'creation': self.creation.strftime('%Y-%m-%dT%H:%M:%SZ'),
             'details': _unify_json_output(self.details),
             'settings': _unify_json_output(self.settings)
@@ -89,8 +94,12 @@ class Run(db.Model):
     def load(self, data):
         """Load data from a json object. This is used to parse user input."""
         self.name = data['name']
+        self.owner = data.get('owner', None)
         self.details = _unify_json_input(data.get('details', None))
         self.settings = _unify_json_input(data.get('settings', None))
+
+        if not self.owner and 'a01.reserved.creator' in data.get('details', {}):
+            self.owner = data['details']['a01.reserved.creator']
 
         if not self.creation:
             self.creation = datetime.utcnow()
@@ -226,6 +235,7 @@ def auth(fn):  # pylint: disable=invalid-name
     return _wrapper
 
 
+@app.route('/api/health')
 @app.route('/api/healthy')
 def get_healthy():
     """Healthy status endpoint"""
