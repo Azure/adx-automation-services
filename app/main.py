@@ -246,14 +246,29 @@ def get_healthy():
 @auth
 def get_runs():
     """List all the runs"""
-    return jsonify([r.digest() for r in Run.query.all()])
+    q = Run.query.order_by(Run.creation.desc())
+    if 'owner' in request.args:
+        q = q.filter_by(owner=request.args['owner'])
+    if 'last' in request.args:
+        q = q.limit(request.args['last'])
+    if 'skip' in request.args:
+        q = q.offset(request.args['skip'])
+
+    return jsonify([r.digest() for r in q.all()])
 
 
 @app.route('/api/run', methods=['POST'])
 @auth
 def post_run():
+    data = request.json
+    if 'details' not in data:
+        return jsonify({'error': 'The body of the request misses "details" dictionary'}), 400
+    if 'a01.reserved.creator' not in data['details']:
+        return jsonify({'error': 'The "a01.reserved.creator" property is missing from the "details". The request was '
+                                 'sent from an older version of client. Please upgrade your client.'}), 400
+
     run = Run()
-    run.load(request.json)
+    run.load(data)
 
     db.session.add(run)
     db.session.commit()
