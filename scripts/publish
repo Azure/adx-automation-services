@@ -12,7 +12,7 @@ set -e
 registry=azureclidev
 image=azureclidev.azurecr.io/a01store:$version
 
-#docker login azureclidev.azurecr.io -u $AZURECLIDEV_ACR_SP_USERNAME -p $AZURECLIDEV_ACR_SP_PASSWORD
+docker login azureclidev.azurecr.io -u $AZURECLIDEV_ACR_SP_USERNAME -p $AZURECLIDEV_ACR_SP_PASSWORD
 docker pull $image >/dev/null 2>&1 && (echo The image $image already exists. >&2; exit 1)
 
 docker build -t $image .
