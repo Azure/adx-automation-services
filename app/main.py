@@ -246,15 +246,15 @@ def get_healthy():
 @auth
 def get_runs():
     """List all the runs"""
-    q = Run.query.order_by(Run.creation.desc())
+    query = Run.query.order_by(Run.creation.desc())
     if 'owner' in request.args:
-        q = q.filter_by(owner=request.args['owner'])
+        query = query.filter_by(owner=request.args['owner'])
     if 'last' in request.args:
-        q = q.limit(request.args['last'])
+        query = query.limit(request.args['last'])
     if 'skip' in request.args:
-        q = q.offset(request.args['skip'])
+        query = query.offset(request.args['skip'])
 
-    return jsonify([r.digest() for r in q.all()])
+    return jsonify([r.digest() for r in query.all()])
 
 
 @app.route('/api/run', methods=['POST'])
