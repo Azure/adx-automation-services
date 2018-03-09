@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# parameters' names are out-of-date
+
 comkey=$(kubectl get secret a01store-internal-communication-key --template {{.data.key}} | base64 -D)
 smtp_server=$(kubectl get secret a01monitor --template {{.data.server}} | base64 -D)
 smtp_password=$(kubectl get secret a01monitor --template {{.data.password}} | base64 -D)
