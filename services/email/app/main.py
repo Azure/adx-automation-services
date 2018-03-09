@@ -160,4 +160,3 @@ def send_report():
         server.send_message(mail)
 
     return jsonify({'status': 'done'})
-

@@ -105,4 +105,7 @@ ENV/
 .vscode/
 
 # Kubernetes
+secret.yaml
+secret.yml
 secrets.yaml
+secrets.yml

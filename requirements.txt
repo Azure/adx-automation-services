@@ -5,4 +5,5 @@ pylint==1.8.2
 wheel==0.30.0
 setuptools==38.5.1
 
--r app/requirements.txt
+-r services/store/app/requirements.txt
+-r services/email/app/requirements.txt
