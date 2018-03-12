@@ -10,9 +10,9 @@ import logging
 import os
 import json
 from functools import wraps
+from distutils.version import LooseVersion
 
 import coloredlogs
-from sqlalchemy.exc import IntegrityError, DBAPIError
 from flask import Flask, jsonify, request, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -266,6 +266,13 @@ def post_run():
     if 'a01.reserved.creator' not in data['details']:
         return jsonify({'error': 'The "a01.reserved.creator" property is missing from the "details". The request was '
                                  'sent from an older version of client. Please upgrade your client.'}), 400
+    if 'a01.reserved.client' not in data['details']:
+        return jsonify({'error': 'The "a01.reserved.client" property is missing from the "details". The request was '
+                                 'sent from an older version of client. Please upgrade your client.'}), 400
+    else:
+        client_version = LooseVersion(data['details']['a01.reserved.client'].split(' ')[1])
+        if client_version < LooseVersion('0.15.0'):
+            return jsonify({'error': 'Minimal client requirement is "0.15.0". Please upgrade your client'}), 400
 
     run = Run()
     run.load(data)
@@ -375,30 +382,6 @@ def patch_task(task_id):
 
     db.session.commit()
     return jsonify(task.digest())
-
-
-@app.route('/api/run/<run_id>/checkout', methods=['POST'])
-@auth
-def checkout_task(run_id):
-    run = Run.query.filter_by(id=run_id).first()
-    if not run:
-        return jsonify({'error': f'run <{run_id}> is not found'}), 404
-
-    # three retry
-    for _ in range(3):
-        task = Task.query.filter_by(run_id=run.id, status='initialized').with_for_update(skip_locked=True).first()
-        if not task:
-            return jsonify({'message': 'all tasks are scheduled'}), 204
-
-        task.status = 'scheduled'
-        try:
-            db.session.commit()
-        except (IntegrityError, DBAPIError):
-            continue
-
-        return jsonify(task.digest())
-
-    return jsonify({'error': f'failed to update a task due to row lock. please retry.'}), 500
 
 
 if __name__ == '__main__':
