@@ -10,7 +10,7 @@ import logging
 import os
 import json
 from functools import wraps
-from distutils.version import LooseVersion
+from packaging import version
 
 import coloredlogs
 from flask import Flask, jsonify, request, Response
@@ -270,8 +270,8 @@ def post_run():
         return jsonify({'error': 'The "a01.reserved.client" property is missing from the "details". The request was '
                                  'sent from an older version of client. Please upgrade your client.'}), 400
     else:
-        client_version = LooseVersion(data['details']['a01.reserved.client'].split(' ')[1])
-        if client_version < LooseVersion('0.15.0'):
+        client_version = version.parse(data['details']['a01.reserved.client'].split(' ')[1])
+        if client_version < version.parse('0.15.0'):
             return jsonify({'error': 'Minimal client requirement is "0.15.0". Please upgrade your client'}), 400
 
     run = Run()
