@@ -78,7 +78,7 @@ class Run(db.Model):
     # The creation time of the run
     creation = db.Column(db.DateTime)
 
-    # The status of this run. It defines the stage of execution. It includes: Initialized, Scheduling, Running, and 
+    # The status of this run. It defines the stage of execution. It includes: Initialized, Scheduling, Running, and
     # Completed.
     status = db.Column(db.String)
 
