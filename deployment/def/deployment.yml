@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: store-flask-svc
-        image: adxautomationbase.azurecr.io/store:0.9.0
+        image: adxautomationbase.azurecr.io/store:0.9.1
         ports:
         - containerPort: 80
         env:
