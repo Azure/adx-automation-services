@@ -88,6 +88,7 @@ class Run(db.Model):
             'id': self.id,
             'name': self.name,
             'owner': self.owner,
+            'status': self.status,
             'creation': self.creation.strftime('%Y-%m-%dT%H:%M:%SZ'),
             'details': _unify_json_output(self.details),
             'settings': _unify_json_output(self.settings)
@@ -95,23 +96,25 @@ class Run(db.Model):
 
         return result
 
-    def load(self, data):
-        """Load data from a json object. This is used to parse user input."""
-        self.name = data['name']
-        self.owner = data.get('owner', None)
-        self.details = _unify_json_input(data.get('details', None))
-        self.settings = _unify_json_input(data.get('settings', None))
-
-        if not self.owner and 'a01.reserved.creator' in data.get('details', {}):
-            self.owner = data['details']['a01.reserved.creator']
-
-        if not self.creation:
-            self.creation = datetime.utcnow()
-
-    def patch(self, data):
-        # only support update details dictionary
+    def update(self, data):
+        """Update this run. Settings, Creation, and ID are readonly."""
+        if 'name' in data:
+            self.name = data['name']
+        if 'owner' in data:
+            self.owner = data['owner']
         if 'details' in data:
-            setattr(self, 'details', _unify_json_input(data['details']))
+            self.details = _unify_json_input(data['details'])
+        if 'status' in data:
+            self.status = data['status']
+
+    @staticmethod
+    def create(data: dict) -> 'Run':
+        """Create a run data from a json object. This is used to parse user input."""
+        result = Run()
+        result.update(data)
+        result.settings = _unify_json_input(data.get('settings', None))
+        result.creation = datetime.utcnow()
+        return result
 
 
 class Task(db.Model):
@@ -233,6 +236,8 @@ def auth(fn):  # pylint: disable=invalid-name
             return Response(json.dumps({'error': 'Unauthorized', 'message': 'Missing authorization header.'}), 401)
         except jwt.ExpiredSignatureError:
             return Response(json.dumps({'error': 'Expired', 'message': 'The JWT token is expired.'}), 401)
+        except UnicodeDecodeError:
+            return jsonify({'error': 'Bad Request', 'message': 'Authorization header cannot be parsed'}), 400
 
         return fn(*args, **kwargs)
 
@@ -278,8 +283,7 @@ def post_run():
         if client_version < version.parse('0.15.0'):
             return jsonify({'error': 'Minimal client requirement is "0.15.0". Please upgrade your client'}), 400
 
-    run = Run()
-    run.load(data)
+    run = Run.create(data)
 
     db.session.add(run)
     db.session.commit()
@@ -287,12 +291,12 @@ def post_run():
     return jsonify(run.digest())
 
 
-@app.route('/api/run/<run_id>', methods=['PATCH'])
+@app.route('/api/run/<run_id>', methods=['POST'])
 @auth
-def patch_run(run_id):
+def update_run(run_id):
     run = Run.query.filter_by(id=run_id).first_or_404()
     try:
-        run.patch(request.json)
+        run.update(request.json)
     except ValueError as error:
         return jsonify({'error', error})
 
