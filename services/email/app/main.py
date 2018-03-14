@@ -79,9 +79,13 @@ def send_report():
     logger.info(f'successfully read run {run_id}.')
 
     product = run['details'].get('a01.reserved.product', 'azurecli')
+    directory = f'{os.path.dirname(os.path.abspath(__file__))}/templates'
+
+    if os.path.exists(f'{directory}/{product}.html') == False:
+        product = 'azurecli'
 
     content = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
+        loader=jinja2.FileSystemLoader(directory)
     ).get_template(f'{product}.html').render(template.get_context(run, tasks))
 
     logger.info(content) # for debugging
