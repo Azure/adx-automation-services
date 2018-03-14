@@ -17,7 +17,7 @@ import requests
 import coloredlogs
 from flask import Flask, jsonify, request
 import jinja2
-import template
+import templates.email as template
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 
@@ -85,15 +85,16 @@ def send_report():
         product = 'azurecli'
 
     logging.info(f'begin composing report with template {product}')
+    email_template = template.Email(product)
 
     content = jinja2.Environment(
         loader=jinja2.FileSystemLoader(directory)
-    ).get_template(f'{product}.html').render(template.get_context(run, tasks))
+    ).get_template(f'{product}.html').render(email_template.get_context(run, tasks))
 
     logger.info(content) # for debugging
 
     mail = MIMEMultipart()
-    mail['Subject'] = template.get_subject(run, tasks)
+    mail['Subject'] = email_template.get_subject(run, tasks)
     mail['From'] = SMTP_USER
     mail['To'] = receivers
     mail.attach(MIMEText(content, 'html'))
