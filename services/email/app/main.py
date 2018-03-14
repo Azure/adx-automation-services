@@ -84,6 +84,8 @@ def send_report():
     if os.path.exists(f'{directory}/{product}.html') == False:
         product = 'azurecli'
 
+    logging.info(f'begin composing report with template {product}')
+
     content = jinja2.Environment(
         loader=jinja2.FileSystemLoader(directory)
     ).get_template(f'{product}.html').render(template.get_context(run, tasks))
