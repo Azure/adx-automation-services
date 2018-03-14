@@ -52,7 +52,8 @@ class TemplateCLI(Template):
 
         return {
             'summaries': tabulate(summaries, tablefmt="html"),
-            'failures': tabulate(failure, headers=("id", "name", "status", "result", "duration(ms)", "module"), tablefmt="html"),
+            'failures': tabulate(failure,
+                                 headers=("id", "name", "status", "result", "duration(ms)", "module"), tablefmt="html"),
             'runID': run['id']
         }
 

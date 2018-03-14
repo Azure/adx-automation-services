@@ -81,7 +81,7 @@ def send_report():
     product = run['details'].get('a01.reserved.product', 'azurecli')
     directory = f'{os.path.dirname(os.path.abspath(__file__))}/templates'
 
-    if os.path.exists(f'{directory}/{product}.html') == False:
+    if not os.path.exists(f'{directory}/{product}.html'):
         product = 'azurecli'
 
     logging.info(f'begin composing report with template {product}')
@@ -90,8 +90,6 @@ def send_report():
     content = jinja2.Environment(
         loader=jinja2.FileSystemLoader(directory)
     ).get_template(f'{product}.html').render(email_template.get_context(run, tasks))
-
-    logger.info(content) # for debugging
 
     mail = MIMEMultipart()
     mail['Subject'] = email_template.get_subject(run, tasks)
