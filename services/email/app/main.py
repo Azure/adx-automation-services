@@ -78,11 +78,11 @@ def send_report():
 
     logger.info(f'successfully read run {run_id}.')
 
-    product = run['details'].get('a01.reserved.product', 'azurecli')
+    product = run['details'].get('a01.reserved.product', None)
     directory = f'{os.path.dirname(os.path.abspath(__file__))}/templates'
 
     if not os.path.exists(f'{directory}/{product}.html'):
-        product = 'azurecli'
+        logger.error(f'there isn`t a template for product {product}')
 
     logging.info(f'begin composing report with template {product}')
     email_template = template.Email(product)

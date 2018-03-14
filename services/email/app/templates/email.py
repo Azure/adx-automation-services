@@ -5,8 +5,10 @@ class Email(object):
     def __init__(self, product: str):
         if product == 'azuresdkforgo':
             self._template = azuresdkforgo.TemplateGo
-        else:
+        elif product == 'azurecli':
             self._template = azurecli.TemplateCLI
+        else:
+            raise NotImplementedError
 
     def get_context(self, run: dict, tasks: dict) -> dict:
         return self._template.get_context(self._template, run, tasks)
