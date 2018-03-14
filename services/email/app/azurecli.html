@@ -1,0 +1,22 @@
+<html>
+    <body>
+        <div>
+            <h2>Summary</h2>
+            {{ summaries }}
+        </div>
+        <div>
+            <h2>Failures</h2>
+            {{ failures }}
+        </div>
+        <div>
+            <h2>More details</h2>
+            <p>Install the latest release of A01 client to download log and recordings.</p>
+            <p>Instruction is here: https://github.com/azure/adx-automation-client</p>
+            <code>
+            $ a01 login<br>
+            $ a01 get runs -l {{ runID }}<br>
+            </code>
+            <p>Contact: trdai@microsoft.com</p>
+        </div>
+    </body>
+</html>
