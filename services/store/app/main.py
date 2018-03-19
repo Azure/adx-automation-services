@@ -186,17 +186,22 @@ class Task(db.Model):
         self.result = data.get('result', None)
         self.result_details = _unify_json_input(data.get('result_details', None))
 
-    def patch(self, data):
-        logger = logging.getLogger(Task.__class__.__name__)
-        for key, value in data.items():
-            if key in self.immutable_properties:
-                logger.warning(f'Property {key} is immutable. Ignored.')
-                continue
-            if hasattr(self, key):
-                if key == 'settings' or key == 'result_details':
-                    setattr(self, key, _unify_json_input(value))
-                else:
-                    setattr(self, key, value)
+    def update(self, data):
+        """Update this task."""
+        if 'name' in data:
+            self.name = data['name']
+        if 'settings' in data:
+            self.settings = _unify_json_input(data['settings'])
+        if 'annotation' in data:
+            self.annotation = data['annotation']
+        if 'status' in data:
+            self.status = data['status']
+        if 'duration' in data:
+            self.duration = data['duration']
+        if 'result' in data:
+            self.result = data['result']
+        if 'result_details' in data:
+            self.result_details = _unify_json_input(data['result_details'])
 
 
 class AzureADPublicKeysManager(object):
@@ -393,13 +398,14 @@ def update_run(run_id):
     try:
         run.update(request.json)
     except ValueError as error:
-        return jsonify({'error', error})
+        return jsonify({'error': error}), 500
 
     db.session.commit()
     return jsonify(run.digest())
 
 
 @app.route('/api/run/<run_id>/restart', methods=['POST'])
+@auth
 def restart_run(run_id):
     run = Run.query.filter_by(id=run_id).first_or_404()
     try:
@@ -468,7 +474,20 @@ def post_task(run_id):
     return jsonify(task.digest())
 
 
-@app.route('/api/task/<task_id>')
+@app.route('/api/task/<task_id>', methods=['POST'])
+@auth
+def update_task(task_id):
+    task = Task.query.filter_by(id=task_id).first_or_404()
+    try:
+        task.update(request.json)
+    except ValueError as error:
+        return jsonify({'error': error}), 500
+
+    db.session.commit()
+    return jsonify(task.digest())
+
+
+@app.route('/api/task/<task_id>', methods=['GET'])
 @auth
 def get_task(task_id):
     task = Task.query.filter_by(id=task_id).first()
