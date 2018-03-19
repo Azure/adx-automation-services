@@ -71,6 +71,11 @@ def send_report():
     logger.info('requested to send email')
     run_id = request.json['run_id']
     receivers = request.json['receivers']
+
+    template_url = None
+    if 'template' in request.json:
+        template_url = request.json['template']
+
     logger.info(f'run: {run_id} | receivers: {receivers}')
 
     run = SESSION.get(get_task_store_uri(f'run/{run_id}')).json()
@@ -80,12 +85,19 @@ def send_report():
 
     product = run['details'].get('a01.reserved.product', None)
     directory = f'{os.path.dirname(os.path.abspath(__file__))}/templates'
+    file = f'{directory}/{product}.html'
 
-    if not os.path.exists(f'{directory}/{product}.html'):
-        logger.error(f'there isn`t a template for product {product}')
+    if os.path.exists(file):
+        os.remove(file)
+
+    if not template_url:
+        product = 'generic'
 
     logging.info(f'begin composing report with template {product}')
     email_template = template.Email(product)
+
+    if template_url:
+        download_template(template_url, file)
 
     content = jinja2.Environment(
         loader=jinja2.FileSystemLoader(directory)
@@ -104,3 +116,10 @@ def send_report():
         server.send_message(mail)
 
     return jsonify({'status': 'done'})
+
+def download_template(uri: str, path: str):
+    resp = requests.get(uri)
+    resp.raise_for_status()
+    file = open(path, "w")
+    file.write(resp.text)
+    file.close()

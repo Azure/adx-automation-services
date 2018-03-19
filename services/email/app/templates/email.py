@@ -1,5 +1,6 @@
 import templates.azurecli as azurecli
 import templates.azuresdkforgo as azuresdkforgo
+import templates.generic as generic
 
 class Email(object):
     def __init__(self, product: str):
@@ -7,6 +8,8 @@ class Email(object):
             self._template = azuresdkforgo.TemplateGo
         elif product == 'azurecli':
             self._template = azurecli.TemplateCLI
+        elif product == 'generic':
+            self._template = generic.TemplateGeneric
         else:
             raise NotImplementedError
 
