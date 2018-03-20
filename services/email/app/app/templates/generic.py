@@ -33,7 +33,8 @@ class TemplateGeneric(Template):
 
         creation = datetime.strptime(run['creation'], '%Y-%m-%dT%H:%M:%SZ') - timedelta(hours=8)
 
-        summaries = [('Run ID', run['id']),
+        summaries = [('Product', run['details'].get('a01.reserved.product', 'N/A')),
+                     ('Run ID', run['id']),
                      ('Creation', str(creation) + ' PST'),
                      ('Creator', run['details'].get('a01.reserved.creator', 'N/A')),
                      ('Remark', run['settings'].get('a01.reserved.remark', 'N/A')),
@@ -66,4 +67,6 @@ class TemplateGeneric(Template):
 
         result_summary = ' | '.join([f'{result or "Not run"}: {count}' for result, count in results.items()])
 
-        return f'A01 Automation Run {str(creation)} - {result_summary}.'
+        product = run['details'].get('a01.reserved.product', 'A01')
+
+        return f'{product} Automation Run {str(creation)} - {result_summary}.'
