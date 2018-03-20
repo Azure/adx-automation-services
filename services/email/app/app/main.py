@@ -15,7 +15,7 @@ import coloredlogs
 import jinja2
 from flask import Flask, jsonify, request
 
-from app.templates.template import Template
+from app.templates import create_template
 from app.util import is_healthy, send_email, http_get
 
 app = Flask(__name__)  # pylint: disable=invalid-name
@@ -49,7 +49,7 @@ def send_report():
     # select the template
     template_dir, template_file, actual_product = download_template(template_url, product)
     logging.info(f'composing report with template {template_file} as {actual_product} ...')
-    email_template = Template.create_template(actual_product)
+    email_template = create_template(actual_product)
 
     content = jinja2.Environment(
         loader=jinja2.FileSystemLoader(template_dir)
