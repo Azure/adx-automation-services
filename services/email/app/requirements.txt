@@ -3,3 +3,4 @@ Flask==0.12.2
 requests==2.18.4
 tabulate==0.8.2
 jinja2==2.10
+lxml==4.1.1

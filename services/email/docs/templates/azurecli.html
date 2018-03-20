@@ -28,7 +28,7 @@
         }
     </style>
     <title>
-        {{ product }} Automation Report: {{ run.id }} | Pass {{ passed_count }} | Fail {{ failed_count }}
+        Azure CLI Automation Report: {{ run.id }} | Pass {{ passed_count }} | Fail {{ failed_count }}
     </title>
 </head>
 <body>
@@ -62,22 +62,6 @@
                 <td>{{ run.settings.get('a01.reserved.livemode', 'N/A') }}</td>
             </tr>
             <tr>
-                <td>Mode</td>
-                <td>{{ run.settings.get('a01.reserved.testmode', 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td>Query</td>
-                <td>{{ run.settings.get('a01.reserved.testquery', 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td>Designated Secret</td>
-                <td>{{ run.settings.get('a01.reserved.secret', 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td>From Failure</td>
-                <td>{{ run.settings.get('a01.reserved.fromrunfailure', 'N/A') }}</td>
-            </tr>
-            <tr>
                 <td>Agent Version</td>
                 <td>{{ run.settings.get('a01.reserved.agentver', 'N/A') }}</td>
             </tr>
@@ -97,12 +81,20 @@
         <table>
             <tr>
                 <th>ID</th>
+                <th>Module</th>
                 <th>Name</th>
                 <th>Duration(ms)</th>
             </tr>
             {%- for task in failures %}
                 <tr>
+                    {%- set test_name = task.settings.classifier.identifier %}
+                    {%- set test_name_parts = test_name.split('.') %}
                     <td>{{ task.id }}</td>
+                    {%- if test_name_parts[2] == "command_modules" %}
+                    <td>{{ test_name_parts[3] }} </td>
+                    {%- else %}
+                    <td>CORE</td>
+                    {%- endif %}
                     <td>{{ task.settings.classifier.identifier }}</td>
                     <td>{{ task.duration }}</td>
                 </tr>

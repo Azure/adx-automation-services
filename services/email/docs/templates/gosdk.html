@@ -28,7 +28,7 @@
         }
     </style>
     <title>
-        {{ product }} Automation Report: {{ run.id }} | Pass {{ passed_count }} | Fail {{ failed_count }}
+        Azure SDK for Go Sample Automation Run: {{ run.creation }} | Pass {{ passed_count }} | Fail {{ failed_count }}
     </title>
 </head>
 <body>
@@ -58,24 +58,13 @@
                 <td>{{ run.settings.get('a01.reserved.remark', 'N/A') }}</td>
             </tr>
             <tr>
-                <td>Live</td>
-                <td>{{ run.settings.get('a01.reserved.livemode', 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td>Mode</td>
-                <td>{{ run.settings.get('a01.reserved.testmode', 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td>Query</td>
-                <td>{{ run.settings.get('a01.reserved.testquery', 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td>Designated Secret</td>
-                <td>{{ run.settings.get('a01.reserved.secret', 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td>From Failure</td>
-                <td>{{ run.settings.get('a01.reserved.fromrunfailure', 'N/A') }}</td>
+                <td>Azure Location</td>
+                {%- set location = run.settings["a01.reserved.testmode"] %}
+                {%- if location == "centraluseuap" %}
+                <td>Canary</td>
+                {%- else %}
+                <td>Prod</td>
+                {%- endif %}
             </tr>
             <tr>
                 <td>Agent Version</td>
@@ -97,13 +86,19 @@
         <table>
             <tr>
                 <th>ID</th>
-                <th>Name</th>
+                <th>Result</th>
+                <th>Service</th>
+                <th>Test</th>
                 <th>Duration(ms)</th>
             </tr>
             {%- for task in failures %}
                 <tr>
+                    {%- set test_name = task.settings.classifier.identifier %}
+                    {%- set test_name_parts = test_name.split('/') %}
                     <td>{{ task.id }}</td>
-                    <td>{{ task.settings.classifier.identifier }}</td>
+                    <td>{{ task.result }}</td>
+                    <td>{{ test_name_parts[0] }}</td>
+                    <td>{{ test_name_parts[1] }}</td>
                     <td>{{ task.duration }}</td>
                 </tr>
             {%- endfor %}

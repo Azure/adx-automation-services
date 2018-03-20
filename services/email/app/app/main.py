@@ -12,10 +12,9 @@ from typing import Tuple
 
 import requests
 import coloredlogs
-import jinja2
 from flask import Flask, jsonify, request
 
-from app.templates import create_template
+from app.templates import render
 from app.util import is_healthy, send_email, http_get
 
 app = Flask(__name__)  # pylint: disable=invalid-name
@@ -43,20 +42,11 @@ def send_report():
     # retrieve run and tasks
     run = http_get(f'run/{run_id}')
     tasks = sorted(http_get(f'run/{run_id}/tasks'), key=lambda t: t['status'])
-    product = run['details'].get('a01.reserved.product', 'generic')
-    logger.info(f'successfully read run {run_id} for product {product}.')
-
-    # select the template
-    template_dir, template_file, actual_product = download_template(template_url, product)
-    logging.info(f'composing report with template {template_file} as {actual_product} ...')
-    email_template = create_template(actual_product)
-
-    content = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(template_dir)
-    ).get_template(template_file).render(email_template.get_context(run, tasks))
-    subject = email_template.get_subject(run, tasks)
+    logger.info(f'successfully read run {run_id}.')
+    logger.info(f'using template {template_url or "unknown"}.')
 
     # send email
+    content, subject = render(run, tasks, template_url)
     send_email(receivers, subject, content)
 
     return jsonify({'status': 'done'})
