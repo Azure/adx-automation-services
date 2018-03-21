@@ -1,24 +1,32 @@
-# A01Store Service - ADX Automation System
+# Services for the ADX Automation System
+
+## The email service
+
+See details [here](services/email/docs/README.md)
+
+## The task store service
 
 A01Store service accept automation tests scheduled by the Control (or user) and store it in a database. The test tasks are available to the automation droids. The A01Store plays a passive role in the producer-consumer releationship meaning the driver is the consumer (A01Droid).
 
-## Basic
+### Basic
+
 - Python 3 (3.6)
 - Container based
 - Flask
 
-## Deployments note
+### Deployments note
+
 - Set up namespace.
 - Set up context.
 - Set up secret. The vault is a0secret
 - Set up private docker registry secret using sp azureclidev-contributor
 
-## Database Migration Guid
+### Database Migration Guid
 
 When the data model is changed the database scheme needs to be upgraded as well. This application relies 
 on the Flask-Migrate package to handle the data migrations.
 
-## Steps
+### Steps
 
 - Execute `. script/set_connection_str.sh` to set connection string. You need to have the access to
   the a01store key vault.
@@ -26,7 +34,7 @@ on the Flask-Migrate package to handle the data migrations.
 - Execute `flask db migrate`. Validate the migration
 - Execute `flask db upgrade`.
 
-# Contributing
+## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
