@@ -47,7 +47,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['A01_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)  # pylint: disable=invalid-name
 migrate = Migrate(app, db)  # pylint: disable=invalid-name
-INTERNAL_COMMUNICATION_KEY = os.environ['A01_INTERNAL_COMKEY']
+INTERNAL_COMMUNICATION_KEY = os.environ.get('A01_INTERNAL_COMKEY', base64.b64encode(os.urandom(16)))
 
 
 def _unify_json_input(data):
