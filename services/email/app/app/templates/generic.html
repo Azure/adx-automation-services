@@ -6,7 +6,7 @@
 <head>
     <style>
         body {
-            font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+            font-family: 'Calibri', sans-serif;
         }
 
         .passed {
@@ -25,6 +25,13 @@
 
         td {
             padding-right: 1em;
+        }
+        
+        .code {
+            font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+            background-color: darkslategray;
+            color: azure;
+            padding: 0.25em;
         }
     </style>
     <title>
@@ -114,14 +121,18 @@
         <p>Install the latest release of A01 client to take a closer look.</p>
         <p>Instruction is here: <a href="https://github.com/azure/adx-automation-client">github.com/azure/adx-automation-client</a>
         </p>
-        <code>
-            $ a01 login<br>
-            $ a01 get run -l {{ run.id }}<br>
-        </code>
+        <div class="code">
+            <code>
+                $ a01 login<br>
+                $ a01 get run -l {{ runID }}<br>
+            </code>
+        </div>
         <p>To get particular task details, use:</p>
-        <code>
-            $ a01 get task -l <i>task_id</i><br>
-        </code>
+        <div class="code">
+            <code>
+                $ a01 get task -l <i>task_id</i><br>
+            </code>
+        </div>
     </div>
 </div>
 </body>

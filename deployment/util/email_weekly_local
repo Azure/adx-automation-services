@@ -1,0 +1,20 @@
+#!/bin/bash
+
+comkey=$(kubectl get secret store-secrets --template {{.data.comkey}} | base64 -D)
+smtp_server=$(kubectl get secret email --template {{.data.server}} | base64 -D)
+smtp_password=$(kubectl get secret email --template {{.data.password}} | base64 -D)
+smtp_username=$(kubectl get secret email --template {{.data.username}} | base64 -D)
+store_name='secondapi.azclitest.com'
+
+docker run --rm -e "A01_INTERNAL_COMKEY=$comkey" \
+                -e "A01_REPORT_SMTP_SERVER=$smtp_server" \
+                -e "A01_REPORT_SENDER_ADDRESS=$smtp_username" \
+                -e "A01_REPORT_SENDER_PASSWORD=$smtp_password" \
+                -e "A01_STORE_NAME=$store_name" \
+                -e "PRODUCTS=$1" \
+                -d \
+                --name email_eekly_svc_local_test \
+                email-weekly:latest
+
+docker logs -f email_eekly_svc_local_test
+

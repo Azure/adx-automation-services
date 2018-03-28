@@ -1,0 +1,68 @@
+{%- set run_count = runs|list|length %}
+{%- set test_count = tasks|list|length %}
+{%- set passed_count = tasks|selectattr("result", "eq", "Passed")|list|length %}
+{%- set failed_count = tasks|selectattr("result", "ne", "Passed")|list|length %}
+{%- set product = runs[0].details['a01.reserved.product']|title %}
+
+<html>
+    <head>
+        <style>
+            body {
+                font-family: 'Calibri', sans-serif;
+            }
+
+            .passed {
+                color: green;
+                padding: 0.1em;
+            }
+
+            .failed {
+                color: red;
+                padding: 0.1em;
+            }
+
+            .code {
+                font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+                background-color: darkslategray;
+                color: azure;
+                padding: 0.25em;
+            }
+        </style>
+        <title>
+            {{ product }} Automation Report: week from {{ after }} to {{ before }}
+        </title>
+    </head>
+<body>
+<div class="container">
+    <div class="row">
+        <h1>{{ product }}</h1>
+        <h3>Total runs: {{ run_count }}</h3>
+        <h3>Tests</h3>
+        <h4>
+            <p><span class="passed">Pass {{ passed_count }} ({{ "{0:.2f}".format(passed_count / test_count * 100) }}%)</span></p>
+            <p><span class="failed">Fail {{ failed_count }} ({{ "{0:.2f}".format(failed_count / test_count * 100) }}%)</span></p>
+            <p>Total  {{ test_count }}</p>
+        </h4>
+        <p>Average tests failing per run: {{ "{0:.2f}".format(failed_count / run_count) }}</p>        
+    </div>
+    <div>
+        <h2>More details</h2>
+        <p>Install the latest release of A01 client to take a closer look.</p>
+        <p>Instruction is here: <a href="https://github.com/azure/adx-automation-client">github.com/azure/adx-automation-client</a>
+        </p>
+        <div class="code">
+            <code>
+                $ a01 login<br>
+                $ a01 get run -l <i>run_id</i><br>
+        </code>
+        </div>
+        <p>To get particular task details, use:</p>
+        <div class="code">
+            <code>
+                $ a01 get task -l <i>task_id</i><br>
+            </code>
+        </div>
+    </div>
+</div>
+</body>
+</html> 

@@ -1,12 +1,11 @@
 {%- set passed_count = tasks|selectattr("result", "eq", "Passed")|list|length %}
 {%- set failed_count = tasks|selectattr("result", "ne", "Passed")|list|length %}
-{%- set product = run.details['a01.reserved.product']|title %}
 {%- set failures = tasks|selectattr('result', 'ne', 'Passed')|list|sort(attribute='settings.classifier.identifier') -%}
 <html>
 <head>
     <style>
         body {
-            font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+            font-family: 'Calibri', sans-serif;
         }
 
         .passed {
@@ -26,6 +25,13 @@
         td {
             padding-right: 1em;
         }
+
+        .code {
+            font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+            background-color: darkslategray;
+            color: azure;
+            padding: 0.25em;
+        }
     </style>
     <title>
         Azure SDK for Go Sample Automation Run: {{ run.creation }} | Pass {{ passed_count }} | Fail {{ failed_count }}
@@ -34,7 +40,7 @@
 <body>
 <div class="container">
     <div class="row">
-        <h1>{{ product }}</h1>
+        <h1>Azure SDK for Go Samples</h1>
         <h2>Automation Run: {{ run.id }}
             <span class="passed">Pass {{ passed_count }}</span>
             <span class="failed">Fail {{ failed_count }}</span>
@@ -106,17 +112,22 @@
     </div>
     <div>
         <h2>More details</h2>
+        <p><a href="https://devdiv.visualstudio.com/DevDiv/Azure%20xPlat/_dashboards/dashboard/3406972f-faad-4a4d-82d5-ebed5223596d">Consult test runs report in VSTS</a>. You might need to refresh the report.</p>
         <p>Install the latest release of A01 client to take a closer look.</p>
         <p>Instruction is here: <a href="https://github.com/azure/adx-automation-client">github.com/azure/adx-automation-client</a>
         </p>
-        <code>
-            $ a01 login<br>
-            $ a01 get run -l {{ runID }}<br>
-        </code>
+        <div class="code">
+            <code>
+                $ a01 login<br>
+                $ a01 get run -l {{ run.id }}<br>
+            </code>
+        </div>
         <p>To get particular task details, use:</p>
-        <code>
-            $ a01 get task -l <i>task_id</i><br>
-        </code>
+        <div class="code">
+            <code>
+                $ a01 get task -l <i>task_id</i><br>
+            </code>
+        </div>
     </div>
 </div>
 </body>

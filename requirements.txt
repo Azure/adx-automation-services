@@ -7,3 +7,4 @@ setuptools==38.5.1
 
 -r services/store/app/requirements.txt
 -r services/email/app/requirements.txt
+-r services/newsletter/app/requirements.txt

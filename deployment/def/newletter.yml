@@ -1,0 +1,52 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: email-cronjob
+  labels:
+    system: a01
+    group: base
+  spec:
+    schedule: 7 0 * * 1 # mondays at 7 AM
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            labels:
+              app: email
+          spec:
+            containers:
+              - name: email-weekly-svc
+                image: adxautomationbase.azurecr.io/email-weekly:0.1.0
+                args:
+                - python
+                - /app/main.py
+                env:
+                - name: A01_STORE_NAME
+                  value: store-internal-svc
+                - name: A01_INTERNAL_COMKEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: store-secrets
+                      key: comkey
+                - name: A01_REPORT_SMTP_SERVER
+                  valueFrom:
+                    secretKeyRef:
+                      name: email
+                      key: server
+                - name: A01_REPORT_SENDER_ADDRESS
+                  valueFrom:
+                    secretKeyRef:
+                      name: email
+                      key: username
+                - name: A01_REPORT_SENDER_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: email
+                      key: password
+                - name: PRODUCTS
+                  valueFrom:
+                    secretKeyRef:
+                      name: email
+                      key: products.weekly
+            imagePullSecrets:
+            - name: adxautomationbase-registry
