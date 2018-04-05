@@ -18,7 +18,7 @@ def main() -> None:
         template_url = get_template(product)
 
         before = (datetime.now().date() - timedelta(days=1))
-        after = (before - timedelta(days=6)) # results are inclusive
+        after = (before - timedelta(days=7)) # results are inclusive
         params = {
             'product': product,
             'before': before.strftime('%m-%d-%Y'),
@@ -27,17 +27,19 @@ def main() -> None:
 
         runs = http_get('runs', params=params)
         logger.info(f'got runs from {after} to {before}')
+        logger.info('run IDS are...')
 
         all_tasks = []
         for run in runs:
             run_id = run['id']
+            logger.info(f'{run_id}')
             tasks = http_get(f'run/{run_id}/tasks')
             for task in tasks:
                 all_tasks.append(task)
         logger.info('got all tasks from runs')
 
         content, subject = templates.render(template_uri=template_url, runs=runs,
-                                            tasks=all_tasks, after=after, before=before)
+                                            tasks=all_tasks, after=after, before=(before - timedelta(days=1)))
         logger.info('rendered email content')
 
         send_email(receivers, subject, content)

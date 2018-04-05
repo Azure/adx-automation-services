@@ -18,7 +18,7 @@ SMTP_SERVER = os.environ['A01_REPORT_SMTP_SERVER']
 SMTP_USER = os.environ['A01_REPORT_SENDER_ADDRESS']
 SMTP_PASS = os.environ['A01_REPORT_SENDER_PASSWORD']
 
-DEV = os.environ['DEV']
+DEV = os.environ.get('DEV', None)
 PRODUCTS = os.environ['PRODUCTS'] # products that requirte a runs newsletter
 
 def get_task_store_uri(path: str) -> str:

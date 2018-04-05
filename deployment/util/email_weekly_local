@@ -13,8 +13,8 @@ docker run --rm -e "A01_INTERNAL_COMKEY=$comkey" \
                 -e "A01_STORE_NAME=$store_name" \
                 -e "PRODUCTS=$1" \
                 -d \
-                --name email_eekly_svc_local_test \
+                --name email_weekly_svc_local_test \
                 email-weekly:latest
 
-docker logs -f email_eekly_svc_local_test
+docker logs -f email_weekly_svc_local_test
 
