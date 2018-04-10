@@ -23,7 +23,7 @@ This service renders the report email using a [Jinja2](http://jinja.pocoo.org/do
 Here are two examples:
 
 - [Azure CLI](templates/azurecli.html)
-- [Go SDK](templates/gosdk.html
+- [Go SDK](templates/gosdk.html)
 
 The email's subject line will be extracted from the `title` tagged element from the report content.
 
