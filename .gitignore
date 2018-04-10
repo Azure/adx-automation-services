@@ -109,3 +109,6 @@ secret.yaml
 secret.yml
 secrets.yaml
 secrets.yml
+
+# Azure CLI
+.azure-config/
