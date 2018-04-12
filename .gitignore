@@ -112,3 +112,6 @@ secrets.yml
 
 # Azure CLI
 .azure-config/
+
+# golang vendor folder
+services/powerbi/vendor/
