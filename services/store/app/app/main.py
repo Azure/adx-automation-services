@@ -40,6 +40,8 @@ from kubernetes.client.models.v1_volume_mount import V1VolumeMount
 from kubernetes.client.models.v1_volume import V1Volume
 from kubernetes.client.models.v1_azure_file_volume_source import V1AzureFileVolumeSource
 
+from .util import get_current_namespace, get_communication_key
+
 coloredlogs.install(level=logging.INFO)
 
 app = Flask(__name__)  # pylint: disable=invalid-name
@@ -47,7 +49,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['A01_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)  # pylint: disable=invalid-name
 migrate = Migrate(app, db)  # pylint: disable=invalid-name
-INTERNAL_COMMUNICATION_KEY = os.environ['A01_INTERNAL_COMKEY']
+INTERNAL_COMMUNICATION_KEY = get_communication_key()
 
 
 def _unify_json_input(data):
@@ -265,11 +267,6 @@ def auth(fn):  # pylint: disable=invalid-name
         return fn(*args, **kwargs)
 
     return _wrapper
-
-
-def get_current_namespace() -> str:
-    with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace", mode='r') as handler:
-        return handler.readline()
 
 
 def clean_up_jobs(run_id: str, job_name: str) -> None:

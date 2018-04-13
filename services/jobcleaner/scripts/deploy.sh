@@ -42,7 +42,7 @@ spec:
             image: $image_name
             name: main
           imagePullSecrets:
-          - name: adxautomationbase-registry
+          - name: $container_reg-registry
           restartPolicy: Never
   schedule: \"* 20 * * *\"
   successfulJobsHistoryLimit: 1
