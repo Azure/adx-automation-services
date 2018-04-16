@@ -1,4 +1,24 @@
-apiVersion: apps/v1beta1
+#!/usr/bin/env bash
+
+if [ -z $1 ]; then
+    echo "Usage: $(basename $0) CONTAINER_REGISTRY" >&2
+    exit 1
+fi
+
+root=`cd $(dirname $0); cd ..; pwd`
+
+version=`cat $root/version`
+svc_name=`basename $root`
+
+container_reg=$1
+image_name="$container_reg.azurecr.io/$svc_name:$version"
+
+az acr login -n $container_reg
+docker build -t $image_name $root
+docker push $image_name
+
+
+echo "apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: email-deployment
@@ -14,7 +34,7 @@ spec:
     spec:
       containers:
       - name: email-flask-svc
-        image: adxautomationbase.azurecr.io/email:0.2.0
+        image: $image_name
         ports:
         - containerPort: 80
         env:
@@ -41,7 +61,7 @@ spec:
               name: email
               key: password
       imagePullSecrets:
-      - name: adxautomationbase-registry
+      - name: $container_reg-registry
 ---
 apiVersion: v1
 kind: Service
@@ -54,4 +74,4 @@ spec:
   ports:
   - port: 80
   selector:
-    app: email
+    app: email" | kubectl apply -f -

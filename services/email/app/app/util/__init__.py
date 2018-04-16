@@ -1,5 +1,6 @@
 import os
-from typing import Tuple
+import logging
+from typing import Tuple, Optional
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -11,6 +12,21 @@ INTERNAL_COMMUNICATION_KEY = os.environ['A01_INTERNAL_COMKEY']
 SMTP_SERVER = os.environ['A01_REPORT_SMTP_SERVER']
 SMTP_USER = os.environ['A01_REPORT_SENDER_ADDRESS']
 SMTP_PASS = os.environ['A01_REPORT_SENDER_PASSWORD']
+
+STORE_URL = os.environ.get('A01_STORE_NAME')
+STORE_URL = f'http://{STORE_URL}' if not STORE_URL.startswith('http') else STORE_URL
+
+logger = logging.getLogger('a01.svc.email')  # pylint: disable=invalid-name
+
+
+class InternalAuth(object):  # pylint: disable=too-few-public-methods
+    def __call__(self, req):
+        req.headers['Authorization'] = INTERNAL_COMMUNICATION_KEY
+        return req
+
+
+session = requests.Session()  # pylint: disable=invalid-name
+session.auth = InternalAuth()
 
 
 def is_healthy() -> Tuple[str, str]:
@@ -29,28 +45,17 @@ def is_healthy() -> Tuple[str, str]:
     return status, remark
 
 
-def get_task_store_uri(path: str) -> str:
-    # in debug mode, the service is likely run out of a cluster, switch to https schema
-    store_host = os.environ.get('A01_STORE_NAME', 'task-store-web-service-internal')
-    return f'https://{store_host}/api/{path}' if 'FLASK_DEBUG' in os.environ else f'http://{store_host}/api/{path}'
-
-
-def http_get(path: str):
-    class InternalAuth(object):  # pylint: disable=too-few-public-methods
-        def __call__(self, req):
-            req.headers['Authorization'] = INTERNAL_COMMUNICATION_KEY
-            return req
-
-    session = requests.Session()
-    session.auth = InternalAuth()
-
+def http_get(path: str) -> Optional[dict]:
     try:
-        return session.get(get_task_store_uri(path)).json()
+        resp = session.get(f'{STORE_URL}/api/{path}')
+        resp.raise_for_status()
+
+        return resp.json()
     except (requests.HTTPError, ValueError, TypeError):
         return None
 
 
-def send_email(receivers: str, subject: str, content: str):
+def send_email(receivers: str, subject: str, content: str) -> None:
     mail = MIMEMultipart()
     mail['Subject'] = subject
     mail['From'] = SMTP_USER

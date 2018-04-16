@@ -8,8 +8,9 @@ matrix:
     install:
       - pip install -r requirements.txt
     script:
-      - find services/store/app -name '*.py' | xargs pylint
-      - find services/email/app -name '*.py' | xargs pylint
+      - pylint services/store/app/app
+      - pylint services/email/app/app
+      - find services/jobcleaner/app -name '*.py' | xargs pylint
       - find services/newsletter/app -name '*.py' | xargs pylint
     deploy:
       - provider: script

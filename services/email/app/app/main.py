@@ -5,17 +5,14 @@ Accept request from other controllers in the cluster to send email. The service 
 originates out of the cluster therefore authentication is no needed.
 """
 
-import os
 import logging
 from datetime import datetime
-from typing import Tuple
 
-import requests
 import coloredlogs
 from flask import Flask, jsonify, request
 
-from app.templates import render
-from app.util import is_healthy, send_email, http_get
+from .templates import render
+from .util import is_healthy, send_email, http_get
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 
@@ -50,23 +47,3 @@ def send_report():
     send_email(receivers, subject, content)
 
     return jsonify({'status': 'done'})
-
-
-def download_template(uri: str, product: str) -> Tuple[str, str, str]:
-    template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-    if uri:
-        template_local_path = os.path.join(template_dir, f'{product}.html')
-        try:
-            resp = requests.get(uri)
-            resp.raise_for_status()
-            with open(template_local_path, 'w') as handler:
-                handler.write(resp.text)
-            return template_dir, f'{product}.html', product
-        except requests.HTTPError:
-            logger.exception('Fail to request template file.')
-        except IOError:
-            logger.exception('Fail to write template file.')
-    else:
-        logger.warning("Template URI is empty")
-
-    return template_dir, 'generic.html', 'generic'
