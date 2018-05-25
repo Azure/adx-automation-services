@@ -1,32 +1,12 @@
-matrix:
-  include:
-  - language: python
-    python:
-      - '3.6'
-    services:
-      - docker
-    install:
-      - pip install -r requirements.txt
-    script:
-      - pylint services/store/app/app
-      - pylint services/email/app/app
-      - find services/jobcleaner/app -name '*.py' | xargs pylint
-      - find services/newsletter/app -name '*.py' | xargs pylint
-    deploy:
-      - provider: script
-        script: scripts/publish
-        on:
-          tags: true
-          branch: master
-  - language: go
-    go:
-      - '1.10.x'
-    install:
-      - go get -u github.com/golang/dep/cmd/dep
-      - cd services/powerbi
-      - dep ensure
-    script:
-      - go build
-      - test -z "$(gofmt -s -l -w $(find ./* -type d -print) | grep -v 'vendor' | tee /dev/stderr)"
-      - test -z "`for d in $dirs; do golint $d | tee /dev/stderr; done`"
-      - test -z "$(go vet ./... |  grep -v 'refers to unknown identifier' | tee /dev/stderr)"
+language: python
+python:
+  - '3.6'
+services:
+  - docker
+install:
+  - pip install -r requirements.txt
+script:
+  - pylint services/store/app/app
+  - pylint services/email/app/app
+  - find services/jobcleaner/app -name '*.py' | xargs pylint
+  - find services/newsletter/app -name '*.py' | xargs pylint
