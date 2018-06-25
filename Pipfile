@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"psycopg2" = "==2.7.4"
+cryptography = "==2.1.4"
+requests = "==2.18.4"
+coloredlogs = "==8.0"
+kubernetes = "==4.0.0"
+tabulate = "==0.8.2"
+lxml = "==4.1.1"
+Flask = "==0.12.2"
+Flask-Migrate = "==2.1.1"
+Flask-SQLAlchemy = "==2.3.2"
+SQLAlchemy = "==1.2.4"
+PyJWT = "==1.5.3"
+"Jinja2" = "==2.10"
+packaging = "==17.1"
+
+[dev-packages]
+pylint = "==1.8.2"
+
+[requires]
+python_version = "3.6"

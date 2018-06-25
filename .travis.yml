@@ -1,12 +1,5 @@
 language: python
 python:
   - '3.6'
-services:
-  - docker
-install:
-  - pip install -r requirements.txt
-script:
-  - pylint services/store/app/app
-  - pylint services/email/app/app
-  - find services/jobcleaner/app -name '*.py' | xargs pylint
-  - find services/newsletter/app -name '*.py' | xargs pylint
+install: "make"
+script: "make ci"
