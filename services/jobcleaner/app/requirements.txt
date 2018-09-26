@@ -1,2 +1,0 @@
-requests==2.18.4
-kubernetes==4.0.0
